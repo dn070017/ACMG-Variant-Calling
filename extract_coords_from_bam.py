@@ -37,16 +37,16 @@ def set_command(acmg_coords, bam_list):
                 end = _end + 10000
                 out_header = '{}{}-{}-{}:{}-{}'.format(out_subdir, in_bam[:-4], acmg_gene, _chr, start, end)
                 command_list.append('samtools view -Sb {} {}:{}-{}'.format(_in_bam, _chr, start, end))
-                stdout_list.append(open('{}.bam'.format(out_header), 'w'))
-                stderr_list.append(open('{}.err'.format(out_header), 'w'))
+                stdout_list.append('{}.bam'.format(out_header))
+                stderr_list.append('{}.err'.format(out_header))
     
     return command_list, stdout_list, stderr_list
 
-def run_command(command_list, stdout_list, stderr_list, outdir='./', threads=1):
+def run_command(command_list, stdout_list, stderr_list, threads=1):
     for i in range(0, len(command_list) // threads + 1):
         start = i * threads
         end = min(start + threads, len(command_list))
-        queue = [Popen(command.split(), stdout=out, stderr=err) for command, out, err in zip(command_list[start:end], stdout_list[start:end], stderr_list[start:end])]
+        queue = [Popen(command.split(), stdout=open(out, 'w'), stderr=open(err, 'w')) for command, out, err in zip(command_list[start:end], stdout_list[start:end], stderr_list[start:end])]
         while True:
             if len(queue) == 0:
                 break
@@ -58,14 +58,11 @@ def run_command(command_list, stdout_list, stderr_list, outdir='./', threads=1):
                     time.sleep(.1)
                     continue
 
-    for out, err in zip(stdout_list, stderr_list):
-        out.close()
-        err.close()
+        #for out, err in zip(stdout_list[start:end], stderr_list[start:end]):
+        #    out.close()
+        #    err.close()
 
 if __name__ == '__main__':
-    outdir = 'outdir'
-    in_bam = 'in_bam.txt'
-    in_coords = 'ACMG_gene_coord_sorted.tsv'
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--outdir', type=str, help='output directory (default: ./)', default='./', required=False)
@@ -84,5 +81,5 @@ if __name__ == '__main__':
     bam_list = read_bam(in_bam)
     acmg_coords = read_coords(in_coords)
     command_list, stdout_list, stderr_list = set_command(acmg_coords, bam_list)
-    run_command(command_list, stdout_list, stderr_list, outdir, threads)
+    run_command(command_list, stdout_list, stderr_list, threads)
 

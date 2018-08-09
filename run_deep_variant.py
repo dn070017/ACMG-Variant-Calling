@@ -7,7 +7,6 @@ from collections import defaultdict
 from subprocess import Popen
 
 from extract_coords_from_bam import read_bam
-from extract_coords_from_bam import run_command
 
 def set_command_samtools(bam_list):
     command_list = list()
@@ -60,6 +59,24 @@ def set_command_postprocessing_variants(bam_list):
 
     return command_list, stdout_list, stderr_list
 
+def run_command(command_list, stdout_list, stderr_list, threads=1):
+    for i in range(0, len(command_list) // threads + 1):
+        start = i * threads
+        end = min(start + threads, len(command_list))
+        queue = [Popen(command.split(), stdout=open(out, 'w'), stderr=open(err, 'w')) for command, out, err in zip(command_list[start:end], stdout_list[start:end], stderr_list[start:end])]
+        while True:
+            if len(queue) == 0:
+                break
+            for process in queue:
+                retcode = process.poll()
+                if retcode is not None:
+                    queue.remove(process)
+                else: 
+                    time.sleep(.1)
+                    continue
+        os.system("docker ps -a | awk '{ print $1, $2 }' | grep gcr.io/deepvariant-docker/deepvariant | awk '{print $1 }' | xargs -I {} docker rm {}")
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -77,7 +94,7 @@ if __name__ == '__main__':
     #run_command(command_list, stdout_list, stderr_list, threads)
     command_list, stdout_list, stderr_list = set_command_make_examples(bam_list)
     run_command(command_list, stdout_list, stderr_list, threads)
-    #command_list, stdout_list, stderr_list = set_command_call_variants(bam_list)
-    #run_command(command_list, stdout_list, stderr_list, threads)
-    #command_list, stdout_list, stderr_list = set_command_postprocessing_variants(bam_list)
-    #run_command(command_list, stdout_list, stderr_list, threads)
+    command_list, stdout_list, stderr_list = set_command_call_variants(bam_list)
+    run_command(command_list, stdout_list, stderr_list, threads)
+    command_list, stdout_list, stderr_list = set_command_postprocessing_variants(bam_list)
+    run_command(command_list, stdout_list, stderr_list, threads)

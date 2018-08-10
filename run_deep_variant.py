@@ -40,7 +40,7 @@ def set_command_call_variants(bam_list):
     for _in_bam in bam_list:
         coord = _in_bam[:-4].split('-')
         coord = coord[-2] + '-' + coord[-1]
-        command_list.append('docker run -it -v /home/dn070017/projects/ACMG-Variant-Calling:/input -v /home/dn070017/bin/Deep-Variant-0.4.1/models:/models gcr.io/deepvariant-docker/deepvariant ./opt/deepvariant/bin/call_variants --outfile /input/{} --examples /input/{} --checkpoints /models/model.ckpt'.format(_in_bam[:-4] + '.example.tfrecord', _in_bam[:-4] + '.variants.tfrecord'))
+        command_list.append('docker run -it -v /home/dn070017/projects/ACMG-Variant-Calling:/input -v /home/dn070017/bin/Deep-Variant-0.4.1/models:/models gcr.io/deepvariant-docker/deepvariant ./opt/deepvariant/bin/call_variants --outfile /input/{} --examples /input/{} --checkpoint /models/model.ckpt'.format(_in_bam[:-4] + '.variant.tfrecord', _in_bam[:-4] + '.example.tfrecord'))
         stdout_list.append('{}.call_variant.out'.format(_in_bam[:-4]))
         stderr_list.append('{}.call_variant.err'.format(_in_bam[:-4]))
 
@@ -53,7 +53,7 @@ def set_command_postprocessing_variants(bam_list):
     for _in_bam in bam_list:
         coord = _in_bam[:-4].split('-')
         coord = coord[-2] + '-' + coord[-1]
-        command_list.append('docker run -it -v /home/dn070017/projects/ACMG-Variant-Calling:/input -v /home/dn070017/bin/Deep-Variant-0.4.1/models:/models gcr.io/deepvariant-docker/deepvariant ./opt/deepvariant/bin/postprocess_variants --ref /input/Deep-Variant/ucsc.hg19.fasta --infile /input/{} --outfile /input/{}'.format(_in_bam[:-4] + '.variants.tfrecord', _in_bam[:-4] + '.vcf'))
+        command_list.append('docker run -it -v /home/dn070017/projects/ACMG-Variant-Calling:/input -v /home/dn070017/bin/Deep-Variant-0.4.1/models:/models gcr.io/deepvariant-docker/deepvariant ./opt/deepvariant/bin/postprocess_variants --ref /input/Deep-Variant/ucsc.hg19.fasta --infile /input/{} --outfile /input/{}'.format(_in_bam[:-4] + '.variant.tfrecord', _in_bam[:-4] + '.vcf'))
         stdout_list.append('{}.postprocessing_variant.out'.format(_in_bam[:-4]))
         stderr_list.append('{}.postprocessing_variant.err'.format(_in_bam[:-4]))
 
@@ -92,8 +92,8 @@ if __name__ == '__main__':
     bam_list = read_bam(in_bam)
     #command_list, stdout_list, stderr_list = set_command_samtools(bam_list)
     #run_command(command_list, stdout_list, stderr_list, threads)
-    command_list, stdout_list, stderr_list = set_command_make_examples(bam_list)
-    run_command(command_list, stdout_list, stderr_list, threads)
+    #command_list, stdout_list, stderr_list = set_command_make_examples(bam_list)
+    #run_command(command_list, stdout_list, stderr_list, threads)
     command_list, stdout_list, stderr_list = set_command_call_variants(bam_list)
     run_command(command_list, stdout_list, stderr_list, threads)
     command_list, stdout_list, stderr_list = set_command_postprocessing_variants(bam_list)

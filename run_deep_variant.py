@@ -90,10 +90,10 @@ if __name__ == '__main__':
     threads = args.thread
 
     bam_list = read_bam(in_bam)
-    #command_list, stdout_list, stderr_list = set_command_samtools(bam_list)
-    #run_command(command_list, stdout_list, stderr_list, threads)
-    #command_list, stdout_list, stderr_list = set_command_make_examples(bam_list)
-    #run_command(command_list, stdout_list, stderr_list, threads)
+    command_list, stdout_list, stderr_list = set_command_samtools(bam_list)
+    run_command(command_list, stdout_list, stderr_list, threads)
+    command_list, stdout_list, stderr_list = set_command_make_examples(bam_list)
+    run_command(command_list, stdout_list, stderr_list, threads)
     command_list, stdout_list, stderr_list = set_command_call_variants(bam_list)
     run_command(command_list, stdout_list, stderr_list, threads)
     command_list, stdout_list, stderr_list = set_command_postprocessing_variants(bam_list)
